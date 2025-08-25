@@ -1,0 +1,28 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: "requestloan-credya-reactivo"
+  devtools:
+    add-properties: false
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/crediyaloanrequest
+    username: mfacevedo
+    password: password
+
+    sql:
+      init:
+        mode: always  # en dev, para ejecutar schema.sql/data.sql si los pones
+  profiles:
+    include: null
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+cors:
+  allowed-origins: "http://localhost:4200,http://localhost:8080"
