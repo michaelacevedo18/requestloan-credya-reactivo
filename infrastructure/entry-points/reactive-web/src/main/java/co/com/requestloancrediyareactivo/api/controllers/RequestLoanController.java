@@ -3,6 +3,7 @@ import co.com.requestloancrediyareactivo.api.dtos.RequestLoanCreateDTO;
 import co.com.requestloancrediyareactivo.api.dtos.ResponseDTO;
 import co.com.requestloancrediyareactivo.api.mapper.RequestLoanMapper;
 import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
+import co.com.requestloancrediyareactivo.model.requestloan.models.UserResponseDomain;
 import co.com.requestloancrediyareactivo.usecase.requestloan.RequestLoanUseCase;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.AllArgsConstructor;
@@ -31,19 +33,43 @@ public class RequestLoanController {
 
     private final RequestLoanUseCase useCase;
 
-    @PostMapping
-    public Mono<ResponseEntity<ResponseDTO<RequestLoanDomain>>> create(@Valid @RequestBody Mono<RequestLoanCreateDTO> dtoMono) {
+    @PostMapping("/registrar")
+    public Mono<ResponseEntity<ResponseDTO<RequestLoanDomain>>> create(
+            @Valid @RequestBody Mono<RequestLoanCreateDTO> dtoMono,
+            Authentication authentication
+    ) {
         return dtoMono
                 .map(RequestLoanMapper::toDomain)
-                .flatMap(useCase::apply)
-                .map(user -> ResponseEntity.ok(
+                .flatMap(domain -> {
+                    UserResponseDomain user = (UserResponseDomain) authentication.getPrincipal();
+                    return useCase.apply(domain, user);
+                })
+                .map(data -> ResponseEntity.ok(
                         ResponseDTO.<RequestLoanDomain>builder()
                                 .success(true)
                                 .message("Solicitud registrada exitosamente")
-                                .data(user)
+                                .data(data)
                                 .statusCode(200)
                                 .timestamp(LocalDateTime.now())
                                 .build()
                 ));
     }
+
+/**
+    //@GetMapping("/admin")
+    //public Mono<ResponseEntity<String>> adminEndpoint() {
+        //return Mono.just(ResponseEntity.ok("Acceso autorizado solo para rol admin"));
+    }
+
+    @GetMapping("/customer")
+    public Mono<ResponseEntity<String>> customerEndpoint() {
+        return Mono.just(ResponseEntity.ok("Acceso autorizado solo para rol customer"));
+    }
+
+    @GetMapping("/asesor")
+    public Mono<ResponseEntity<String>> asesorEndpoint() {
+        return Mono.just(ResponseEntity.ok("Acceso autorizado solo para rol asesor"));
+    }
+**/
+
 }

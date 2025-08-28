@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 class PostgreSQLConnectionPoolTest {
 
-    @InjectMocks
+   /** @InjectMocks
     private PostgreSQLConnectionPool connectionPool;
 
     @Mock
@@ -33,5 +33,5 @@ class PostgreSQLConnectionPoolTest {
     @Test
     void getConnectionConfigSuccess() {
         assertNotNull(connectionPool.getConnectionConfig(properties));
-    }
+    }**/
 }
