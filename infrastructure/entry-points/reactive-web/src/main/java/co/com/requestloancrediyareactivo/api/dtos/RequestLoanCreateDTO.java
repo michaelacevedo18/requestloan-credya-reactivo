@@ -20,6 +20,11 @@ public record RequestLoanCreateDTO(
         @Schema(description = "Correo del cliente", example = "cliente@correo.com", required = true)
         String email,
 
+
+        @NotBlank(message = "El correo es obligatorio")
+        @Schema(description = "Nombre", example = "Julian Perez", required = true)
+        String nombre,
+
         @NotNull(message = "La cantidad es obligatoria")
         @DecimalMin(value = "0.0", inclusive = false, message = "El salario debe ser mayor que 0")
         @DecimalMax(value = "15000000.0", message = "El salario no debe superar 15 millones")

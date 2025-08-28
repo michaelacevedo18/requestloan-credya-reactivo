@@ -103,6 +103,7 @@ tasks.register('jacocoMergedReport', JacocoReport) {
 
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs = [
+            '-parameters',
             '-Amapstruct.suppressGeneratorTimestamp=true'
     ]
 }

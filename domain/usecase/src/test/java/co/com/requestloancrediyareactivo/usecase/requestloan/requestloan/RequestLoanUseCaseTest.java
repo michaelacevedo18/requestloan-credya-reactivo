@@ -9,8 +9,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.IntStream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -18,6 +23,7 @@ import static org.mockito.Mockito.when;
 public class RequestLoanUseCaseTest {
     @Mock
     private RequestLoanRepositoryGateway gateway;
+
     @Mock
     private TypeLoanRepositoryGateway gateway2;
 
@@ -125,4 +131,83 @@ public class RequestLoanUseCaseTest {
                         e.getMessage().equals("Save failed"))
                 .verify();
     }
+
+    @Test
+    void shouldReturnPagedResults() {
+        List<Long> statuses = List.of(1L, 2L, 3L);
+        int page = 1;
+        int size = 6;
+        int skip = (page - 1) * size;
+
+        List<RequestLoanDomain> allFiltered = IntStream.range(0, 28)
+                .mapToObj(i -> RequestLoanDomain.builder()
+                        .id(UUID.randomUUID().toString())
+                        .statusId(1L)
+                        .build())
+                .toList();
+
+        List<RequestLoanDomain> expectedPage = allFiltered.stream()
+                .skip(skip)
+                .limit(size)
+                .toList();
+
+        when(gateway.findAll()).thenReturn(Flux.fromIterable(allFiltered));
+        when(gateway.countByStatuses(statuses)).thenReturn(Mono.just((long) allFiltered.size()));
+
+        StepVerifier.create(useCase.findPendingForReview(statuses, page, size))
+                .expectNextMatches(pageDTO ->
+                        pageDTO.getPage() == page &&
+                                pageDTO.getSize() == size &&
+                                pageDTO.getTotalElements() == 28 &&
+                                pageDTO.getTotalPages() == 5 &&
+                                pageDTO.getContent().equals(expectedPage)
+                )
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenNoMatches() {
+        List<Long> statuses = List.of(99L);
+        int page = 1;
+        int size = 6;
+
+        when(gateway.findAll()).thenReturn(Flux.empty());
+        when(gateway.countByStatuses(statuses)).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(useCase.findPendingForReview(statuses, page, size))
+                .expectNextMatches(pageDTO ->
+                        pageDTO.getPage() == page &&
+                                pageDTO.getSize() == size &&
+                                pageDTO.getTotalElements() == 0 &&
+                                pageDTO.getContent().isEmpty()
+                )
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenPageOutOfBounds() {
+        List<Long> statuses = List.of(1L);
+        int page = 100;
+        int size = 10;
+
+        List<RequestLoanDomain> allFiltered = IntStream.range(0, 15)
+                .mapToObj(i -> RequestLoanDomain.builder()
+                        .id(UUID.randomUUID().toString())
+                        .statusId(1L)
+                        .build())
+                .toList();
+
+        when(gateway.findAll()).thenReturn(Flux.fromIterable(allFiltered));
+        when(gateway.countByStatuses(statuses)).thenReturn(Mono.just((long) allFiltered.size()));
+
+        StepVerifier.create(useCase.findPendingForReview(statuses, page, size))
+                .expectNextMatches(pageDTO ->
+                        pageDTO.getPage() == page &&
+                                pageDTO.getSize() == size &&
+                                pageDTO.getTotalElements() == 15 &&
+                                pageDTO.getContent().isEmpty()
+                )
+                .verifyComplete();
+    }
 }
+

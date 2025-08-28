@@ -1,12 +1,15 @@
 package co.com.requestloancrediyareactivo.usecase.requestloan;
 
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.TypeLoanRepositoryGateway;
+import co.com.requestloancrediyareactivo.model.requestloan.models.PageDTO;
 import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.RequestLoanRepositoryGateway;
 import co.com.requestloancrediyareactivo.model.requestloan.models.UserResponseDomain;
 import co.com.requestloancrediyareactivo.usecase.requestloan.primaryPorts.IRequestLoanUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 public class RequestLoanUseCase implements IRequestLoanUseCase {
@@ -26,6 +29,33 @@ public class RequestLoanUseCase implements IRequestLoanUseCase {
                             .statusId(1L)
                             .build();
                     return gateway1.save(enriched);
+                });
+    }
+
+    @Override
+    public Mono<PageDTO<RequestLoanDomain>> findPendingForReview(List<Long> statuses, int page, int size) {
+        int skip = (page - 1) * size;
+
+        Mono<List<RequestLoanDomain>> contentMono = gateway1.findAll()
+                .filter(entity -> statuses.contains(entity.getStatusId()))
+                .skip(skip)
+                .take(size)
+                .collectList();
+
+        Mono<Long> totalMono = gateway1.countByStatuses(statuses);
+
+        return Mono.zip(contentMono, totalMono)
+                .map(tuple -> {
+                    List<RequestLoanDomain> content = tuple.getT1();
+                    Long total = tuple.getT2();
+                    int totalPages = (int) Math.ceil((double) total / size);
+                    return PageDTO.<RequestLoanDomain>builder()
+                            .content(content)
+                            .page(page)
+                            .size(size)
+                            .totalElements(total)
+                            .totalPages(totalPages)
+                            .build();
                 });
     }
 

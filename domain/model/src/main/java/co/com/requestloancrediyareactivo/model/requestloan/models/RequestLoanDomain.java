@@ -15,6 +15,7 @@ public class RequestLoanDomain {
     private Double amount;
     private Integer term;
     private String document;
+    private String nombre;
     private String email;
     private Long statusId;
     private Long loanTypeId;

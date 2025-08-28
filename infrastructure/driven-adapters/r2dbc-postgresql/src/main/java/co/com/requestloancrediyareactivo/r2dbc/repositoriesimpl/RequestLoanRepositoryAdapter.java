@@ -11,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,4 +35,20 @@ public class RequestLoanRepositoryAdapter implements RequestLoanRepositoryGatewa
                         .map(saved -> mapper.map(saved, RequestLoanDomain.class))
         );
     }
+
+    @Override
+    public Flux<RequestLoanDomain> findAll() {
+        return repo1.findAll()
+                .map(entity -> mapper.map(entity, RequestLoanDomain.class));
+    }
+
+    @Override
+    public Mono<Long> countByStatuses(List<Long> statuses) {
+        return repo1.findAll()
+                .filter(e -> statuses.contains(e.getStatusId()))
+                .count();
+    }
+
+
+
 }

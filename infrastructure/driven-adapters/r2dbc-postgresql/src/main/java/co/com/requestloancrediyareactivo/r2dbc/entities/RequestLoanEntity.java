@@ -36,4 +36,7 @@ public class RequestLoanEntity {
 
     @Column("loan_type_id")
     private Long loanTypeId;
+
+    @Column("nombre")
+    private String nombre;
 }
