@@ -40,7 +40,14 @@ public class RequestLoanUseCase implements IRequestLoanUseCase {
                 .filter(entity -> statuses.contains(entity.getStatusId()))
                 .skip(skip)
                 .take(size)
+                .flatMap(domain ->
+                        gateway2.findTypeById(domain.getLoanTypeId())
+                                .map(type -> domain.toBuilder()
+                                        .loanTypeName(type.getName())
+                                        .build())
+                )
                 .collectList();
+
 
         Mono<Long> totalMono = gateway1.countByStatuses(statuses);
 

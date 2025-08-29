@@ -1,5 +1,6 @@
 package co.com.requestloancrediyareactivo.r2dbc.repositoriesimpl;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.TypeLoanRepositoryGateway;
+import co.com.requestloancrediyareactivo.model.requestloan.models.TypeLoanDomain;
 import co.com.requestloancrediyareactivo.r2dbc.helper.TransactionalUtils;
 import co.com.requestloancrediyareactivo.r2dbc.repositories.TypeLoanRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,22 @@ public class TypeLoanRepositoryAdapter implements TypeLoanRepositoryGateway {
 
     @Override
     public Mono<Boolean> existsById(Long id) {
-        return tx.execute(repo.existsById(id));
+
+        return tx.execute(repo.existsById(id)
+        );
     }
+
+    @Override
+    public Mono<TypeLoanDomain> findTypeById(Long id) {
+        return tx.execute(
+                repo.findById(id)
+                        .map(entity -> TypeLoanDomain.builder()
+                                .id(entity.getId())
+                                .name(entity.getName())
+                                .build()
+                        )
+        );
+    }
+
+
 }

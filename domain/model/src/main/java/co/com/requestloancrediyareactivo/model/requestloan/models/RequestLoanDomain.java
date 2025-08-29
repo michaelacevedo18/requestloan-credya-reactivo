@@ -11,12 +11,15 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class RequestLoanDomain {
-    private String id;
-    private Double amount;
-    private Integer term;
+    //private String id;
+    private Double amount; //monto
+    private Integer term; //plazo
     private String document;
-    private String nombre;
-    private String email;
-    private Long statusId;
-    private Long loanTypeId;
+    private String name; //nombre
+    private String email; //email
+    private Long statusId; //estado
+    private Double interestRate; //tasa de interes
+    private Long loanTypeId; //tipoprestamo
+    private String loanTypeName;
+
 }

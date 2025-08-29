@@ -15,7 +15,7 @@ public record RequestLoanCreateDTO(
         @Schema(description = "documento del cliente", example = "1049049049", required = true)
         String document,
 
-        @Email(message = "Debe ser un correo válido")
+        @Email(message = "Debe ser un correo valido")
         @NotBlank(message = "El correo es obligatorio")
         @Schema(description = "Correo del cliente", example = "cliente@correo.com", required = true)
         String email,
@@ -31,14 +31,18 @@ public record RequestLoanCreateDTO(
         @Schema(description = "Monto solicitado", example = "1500000", required = true)
         Double amount,
 
-        @NotNull(message = "El término del prestamo obligatorio")
-        @Schema(description = "Plazo del préstamo en meses", example = "6", required = true)
+        @NotNull(message = "La tasa de interes ")
+        @Schema(description = "Tasa de interes", example = "1.5", required = true)
+        Double interesRate,
+
+        @NotNull(message = "El termino del prestamo obligatorio")
+        @Schema(description = "Plazo del prestamo en meses", example = "6", required = true)
         Integer term,
 
         //@NotNull(message = "El estado es obligatorio")
         //Long statusId,
 
         @NotNull(message = "El tipo de prestamo es obligatorio")
-        @Schema(description = "ID del tipo de préstamo, debe ser válido", example = "1", required = true)
+        @Schema(description = "ID del tipo de prestamo, debe ser valido", example = "1", required = true)
         Long loanTypeId
 ) {}

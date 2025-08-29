@@ -34,6 +34,9 @@ public class RequestLoanEntity {
     @Column("status_id")
     private Long statusId;
 
+    @Column("interest_rate")
+    private Double interestRate;
+
     @Column("loan_type_id")
     private Long loanTypeId;
 

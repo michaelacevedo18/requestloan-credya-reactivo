@@ -3,6 +3,7 @@ package co.com.requestloancrediyareactivo.usecase.requestloan.requestloan;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.RequestLoanRepositoryGateway;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.TypeLoanRepositoryGateway;
 import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
+import co.com.requestloancrediyareactivo.model.requestloan.models.TypeLoanDomain;
 import co.com.requestloancrediyareactivo.model.requestloan.models.UserResponseDomain;
 import co.com.requestloancrediyareactivo.usecase.requestloan.RequestLoanUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -141,28 +142,44 @@ public class RequestLoanUseCaseTest {
 
         List<RequestLoanDomain> allFiltered = IntStream.range(0, 28)
                 .mapToObj(i -> RequestLoanDomain.builder()
-                        .id(UUID.randomUUID().toString())
                         .statusId(1L)
+                        .loanTypeId(1L)
                         .build())
                 .toList();
 
         List<RequestLoanDomain> expectedPage = allFiltered.stream()
                 .skip(skip)
                 .limit(size)
+                .map(loan -> loan.toBuilder().loanTypeName("Personal").build())
                 .toList();
 
         when(gateway.findAll()).thenReturn(Flux.fromIterable(allFiltered));
         when(gateway.countByStatuses(statuses)).thenReturn(Mono.just((long) allFiltered.size()));
 
+        // Simular findTypeById para cada llamada
+        when(gateway2.findTypeById(1L)).thenAnswer(invocation ->
+                Mono.just(TypeLoanDomain.builder().id(1L).name("Personal").build())
+        );
+
         StepVerifier.create(useCase.findPendingForReview(statuses, page, size))
-                .expectNextMatches(pageDTO ->
-                        pageDTO.getPage() == page &&
-                                pageDTO.getSize() == size &&
-                                pageDTO.getTotalElements() == 28 &&
-                                pageDTO.getTotalPages() == 5 &&
-                                pageDTO.getContent().equals(expectedPage)
-                )
+                .assertNext(pageDTO -> {
+                    assert pageDTO.getPage() == page;
+                    assert pageDTO.getSize() == size;
+                    assert pageDTO.getTotalElements() == 28;
+                    assert pageDTO.getTotalPages() == 5;
+                    assert pageDTO.getContent().size() == expectedPage.size();
+
+                    for (int i = 0; i < expectedPage.size(); i++) {
+                        RequestLoanDomain actual = pageDTO.getContent().get(i);
+                        RequestLoanDomain expected = expectedPage.get(i);
+
+                        assert actual.getLoanTypeId().equals(expected.getLoanTypeId());
+                        assert actual.getStatusId().equals(expected.getStatusId());
+                        assert actual.getLoanTypeName().equals(expected.getLoanTypeName());
+                    }
+                })
                 .verifyComplete();
+
     }
 
     @Test
@@ -192,7 +209,7 @@ public class RequestLoanUseCaseTest {
 
         List<RequestLoanDomain> allFiltered = IntStream.range(0, 15)
                 .mapToObj(i -> RequestLoanDomain.builder()
-                        .id(UUID.randomUUID().toString())
+                        //.id(UUID.randomUUID().toString())
                         .statusId(1L)
                         .build())
                 .toList();

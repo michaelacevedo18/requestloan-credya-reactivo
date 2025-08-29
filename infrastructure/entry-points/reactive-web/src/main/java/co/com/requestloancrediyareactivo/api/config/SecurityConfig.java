@@ -14,39 +14,37 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     private final JWTSecurityContextRepository securityContextRepository;
+
     @Bean
-    public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain security(ServerHttpSecurity http) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .securityContextRepository(securityContextRepository)
-                .authorizeExchange(exchange -> exchange
-
+                .authorizeExchange(ex -> ex
+                        // Swagger / OpenAPI (dejar todos libres)
                         .pathMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
+                                "/v3/api-docs.yaml",
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/favicon.ico"
                         ).permitAll()
-                        //.pathMatchers(HttpMethod.POST, "/api/v1/solicitud").permitAll()
-                        //.pathMatchers("/api/v1/auth/login").permitAll()
+
+                        // Tus endpoints (ajusta a tu gusto)
                         .pathMatchers(HttpMethod.POST, "/api/v1/solicitud/registrar").hasRole("CUSTOMER")
                         .pathMatchers(HttpMethod.POST, "/api/v1/solicitud/pendientes").hasRole("ASESOR")
-
-                        //.pathMatchers(HttpMethod.GET, "/api/v1/solicitud/asesor").hasRole("ASESOR")
-                        //.pathMatchers(HttpMethod.GET, "/api/v1/solicitud/customer").hasRole("ADMIN")
 
                         .anyExchange().authenticated()
                 )
                 .build();
     }
-
-
-
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

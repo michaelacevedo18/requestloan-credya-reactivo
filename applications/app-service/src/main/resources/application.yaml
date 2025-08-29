@@ -24,5 +24,12 @@ management:
     health:
       probes:
         enabled: true
+springdoc:
+  api-docs:
+    enabled: true
+  webflux:
+    use-management-port: false
+
+
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8081"
