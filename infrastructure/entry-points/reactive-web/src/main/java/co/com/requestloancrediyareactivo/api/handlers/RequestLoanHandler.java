@@ -17,7 +17,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -42,7 +42,7 @@ public class RequestLoanHandler {
                                                 .message("Solicitud registrada exitosamente")
                                                 .data(data)
                                                 .statusCode(200)
-                                                .timestamp(LocalDateTime.now())
+                                                //.timestamp(LocalDateTime.now())
                                                 .build()))
                 );
     }
@@ -60,7 +60,7 @@ public class RequestLoanHandler {
                                 .message("Listado paginado de solicitudes pendientes")
                                 .data(data)
                                 .statusCode(200)
-                                .timestamp(LocalDateTime.now())
+                                //.timestamp(LocalDateTime.now())
                                 .build()));
     }
 }

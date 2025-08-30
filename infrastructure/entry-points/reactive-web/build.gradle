@@ -13,6 +13,7 @@ dependencies {
 
     // OpenAPI/Swagger - SOLO el starter 2.x (esto ya trae lo necesario)
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.11'
+implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
 
     // JWT

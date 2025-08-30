@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
         import lombok.Builder;
 
-import java.time.LocalDate;
-
 @Builder
 @Schema(description = "DTO para crear una solicitud de préstamo")
 public record RequestLoanCreateDTO(
@@ -23,7 +21,7 @@ public record RequestLoanCreateDTO(
 
         @NotBlank(message = "El correo es obligatorio")
         @Schema(description = "Nombre", example = "Julian Perez", required = true)
-        String nombre,
+        String name,
 
         @NotNull(message = "La cantidad es obligatoria")
         @DecimalMin(value = "0.0", inclusive = false, message = "El salario debe ser mayor que 0")

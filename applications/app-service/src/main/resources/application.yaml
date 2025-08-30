@@ -1,14 +1,23 @@
 server:
-  port: 8081
+  port: 5001
 spring:
   application:
     name: "requestloan-credya-reactivo"
   devtools:
     add-properties: false
+  #r2dbc:
+   # url: r2dbc:postgresql://postgres-crediya:5432/crediyaloanrequest
+   # username: mfacevedo
+   # password: password
+  #r2dbc:
+   # url: r2dbc:postgresql://localhost:5432/crediyaloanrequest
+   # username: mfacevedo
+   # password: password
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/crediyaloanrequest
-    username: mfacevedo
-    password: password
+    url: ${DB_URL:r2dbc:postgresql://localhost:5432/crediyaloanrequest}
+    username: ${DB_USERNAME:mfacevedo}
+    password: ${DB_PASSWORD:password}
+
 
     sql:
       init:
@@ -32,4 +41,4 @@ springdoc:
 
 
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8081"
+  allowed-origins: "http://localhost:4200,http://localhost:5001"

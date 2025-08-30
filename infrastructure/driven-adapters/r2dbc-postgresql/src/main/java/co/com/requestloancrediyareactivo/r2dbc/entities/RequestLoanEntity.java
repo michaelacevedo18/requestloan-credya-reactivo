@@ -1,14 +1,13 @@
 package co.com.requestloancrediyareactivo.r2dbc.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -41,5 +40,5 @@ public class RequestLoanEntity {
     private Long loanTypeId;
 
     @Column("nombre")
-    private String nombre;
+    private String name;
 }

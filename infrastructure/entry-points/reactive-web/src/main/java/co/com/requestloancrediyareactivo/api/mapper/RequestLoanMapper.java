@@ -14,7 +14,7 @@ public class RequestLoanMapper {
                 //.statusId(dto.statusId())
                 .interestRate(dto.interesRate())
                 .email(dto.email())
-                .name(dto.nombre())
+                .name(dto.name())
                 .build();
     }
 
@@ -25,7 +25,7 @@ public class RequestLoanMapper {
                 .document(requestLoan.getDocument())
                 .amount(requestLoan.getAmount())
                 .term(requestLoan.getTerm())
-                .nombre(requestLoan.getName())
+                .name(requestLoan.getName())
                 .loanTypeId(requestLoan.getLoanTypeId())
 
                 .interesRate(requestLoan.getInterestRate())

@@ -1,4 +1,14 @@
 package co.com.requestloancrediyareactivo.api.routers;
+import org.springdoc.core.annotations.RouterOperation;
+import org.springdoc.core.annotations.RouterOperations;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import org.springframework.web.reactive.function.server.ServerResponse;
+
 import co.com.requestloancrediyareactivo.api.dtos.RequestLoanCreateDTO;
 import co.com.requestloancrediyareactivo.api.dtos.ResponseDTO;
 import co.com.requestloancrediyareactivo.api.handlers.RequestLoanHandler;
@@ -6,22 +16,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springdoc.core.annotations.RouterOperation;
-import org.springdoc.core.annotations.RouterOperations;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.server.RouterFunction;
-import org.springframework.web.reactive.function.server.ServerResponse;
-
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
-import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @Configuration
 public class RequestLoanRouter {
@@ -48,7 +46,7 @@ public class RequestLoanRouter {
                         {
                           "document": "1049049049",
                           "email": "cliente@correo.com",
-                          "nombre": "Julian Perez",
+                          "name": "Julian Perez",
                           "amount": 1500000,
                           "interesRate": 1.3,
                           "term": 6,
