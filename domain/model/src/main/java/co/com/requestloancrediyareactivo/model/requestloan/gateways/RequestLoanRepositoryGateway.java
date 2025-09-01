@@ -5,9 +5,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface RequestLoanRepositoryGateway {
     Mono<RequestLoanDomain> save(RequestLoanDomain requestLoanD);
+    Mono<RequestLoanDomain> update(RequestLoanDomain requestLoanD);
     Flux<RequestLoanDomain> findAll();
     Mono<Long> countByStatuses(List<Long> statuses);
+    Mono<RequestLoanDomain> findById(UUID id);
+    Mono<Void> sendStatusUpdateMessage(RequestLoanDomain solicitud);
 }

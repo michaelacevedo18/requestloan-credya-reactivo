@@ -39,6 +39,14 @@ springdoc:
   webflux:
     use-management-port: false
 
+aws:
+  region: ${REGIONALS:us-east-1}
+  accessKeyId: ${ACCESSORY:test}
+  secretAccessKey: ${SECRETARY:test}
+  queue: ${QUEUE:http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/cola-pruebas}
+  sns: ${ARNTOPIC:arn:aws:sns:us-east-1:000000000000:notificaciones}
+  sqsSns: ${SUBSEQUENTS:arn:aws:sns:us-east-1:000000000000:notificaciones:d768f633-b2c0-4214-99f0-3e5fe5b16e16}
+
 
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:5001"

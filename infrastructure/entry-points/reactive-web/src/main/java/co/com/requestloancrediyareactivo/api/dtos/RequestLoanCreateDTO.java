@@ -4,10 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
         import lombok.Builder;
 
+import java.util.UUID;
+
 @Builder
 @Schema(description = "DTO para crear una solicitud de préstamo")
 public record RequestLoanCreateDTO(
-        //String id,
+        UUID id,
 
         @NotBlank(message = "El documento es obligatorio")
         @Schema(description = "documento del cliente", example = "1049049049", required = true)

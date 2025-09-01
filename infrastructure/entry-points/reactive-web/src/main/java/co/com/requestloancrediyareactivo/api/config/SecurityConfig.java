@@ -25,7 +25,6 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange(ex -> ex
-                        // Swagger / OpenAPI (dejar todos libres)
                         .pathMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -38,9 +37,9 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Tus endpoints (ajusta a tu gusto)
-                        .pathMatchers(HttpMethod.POST, "/api/v1/solicitud/registrar").hasRole("CUSTOMER")
+                        .pathMatchers(HttpMethod.POST, "/api/v1/solicitud").hasRole("CUSTOMER")
                         .pathMatchers(HttpMethod.POST, "/api/v1/solicitud/pendientes").hasRole("ASESOR")
-
+                        .pathMatchers(HttpMethod.PUT, "/api/v1/solicitud/update").hasRole("ASESOR")
                         .anyExchange().authenticated()
                 )
                 .build();

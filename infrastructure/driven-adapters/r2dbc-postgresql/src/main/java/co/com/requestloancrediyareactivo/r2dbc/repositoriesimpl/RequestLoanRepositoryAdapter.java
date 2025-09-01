@@ -2,6 +2,7 @@ package co.com.requestloancrediyareactivo.r2dbc.repositoriesimpl;
 
 
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.RequestLoanRepositoryGateway;
+import co.com.requestloancrediyareactivo.model.requestloan.gateways.ports.SQSEventPublisherPort;
 import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
 import co.com.requestloancrediyareactivo.r2dbc.entities.RequestLoanEntity;
 import co.com.requestloancrediyareactivo.r2dbc.helper.TransactionalUtils;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ public class RequestLoanRepositoryAdapter implements RequestLoanRepositoryGatewa
     private final RequestLoanRepository repo1;
     private final ObjectMapper mapper;
     private final TransactionalUtils tx;
+    private final SQSEventPublisherPort sqsEventPublisherPort;
 
     @Override
     public Mono<RequestLoanDomain> save(RequestLoanDomain domain) {
@@ -37,6 +40,19 @@ public class RequestLoanRepositoryAdapter implements RequestLoanRepositoryGatewa
     }
 
     @Override
+    public Mono<RequestLoanDomain> update(RequestLoanDomain domain) {
+        return tx.execute(
+                Mono.fromSupplier(() -> {
+                            var entity = mapper.map(domain, RequestLoanEntity.class);
+                            return entity;
+                        })
+                        .flatMap(repo1::save)
+                        .map(saved -> mapper.map(saved, RequestLoanDomain.class))
+        );
+    }
+
+
+    @Override
     public Flux<RequestLoanDomain> findAll() {
         return repo1.findAll()
                 .map(entity -> mapper.map(entity, RequestLoanDomain.class));
@@ -47,6 +63,19 @@ public class RequestLoanRepositoryAdapter implements RequestLoanRepositoryGatewa
         return repo1.findAll()
                 .filter(e -> statuses.contains(e.getStatusId()))
                 .count();
+    }
+
+    @Override
+    public Mono<RequestLoanDomain> findById(UUID id) {
+        return repo1.findById(id)
+                .map(entity -> mapper.map(entity, RequestLoanDomain.class));
+    }
+
+
+
+    @Override
+    public Mono<Void> sendStatusUpdateMessage(RequestLoanDomain solicitud) {
+        return sqsEventPublisherPort.sendStatusUpdateMessage(solicitud);
     }
 
 

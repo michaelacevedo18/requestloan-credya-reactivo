@@ -1,10 +1,12 @@
 package co.com.requestloancrediyareactivo.api.routers;
+import co.com.requestloancrediyareactivo.api.dtos.RequestLoanUpdateDTO;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RequestPredicates.PUT;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -27,7 +29,7 @@ public class RequestLoanRouter {
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/api/v1/solicitud/registrar",
+                    path = "/api/v1/solicitud",
                     beanClass = RequestLoanHandler.class,
                     beanMethod = "create",
                     operation = @Operation(
@@ -93,10 +95,48 @@ public class RequestLoanRouter {
                                     )
                             }
                     )
-            )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/solicitud/update",
+                    beanClass = RequestLoanHandler.class,
+                    beanMethod = "updateStatus",
+                    operation = @Operation(
+                            operationId = "actualizarEstadoSolicitud",
+                            summary = "Actualizar estado de solicitud (aprobado o rechazado)",
+                            description = "Permite aprobar o rechazar una solicitud existente",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema = @Schema(implementation = RequestLoanUpdateDTO.class),
+                                            examples = {
+                                                    @ExampleObject(
+                                                            name = "Ejemplo de actualización",
+                                                            value = """
+                            {
+                              "id": "96942fc4-65b9-44da-b29e-a836fb6f4d32",
+                              "statusId": 2,
+                              "comment": "Aprobado por buen historial"
+                            }
+                        """
+                                                    )
+                                            }
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Actualizado exitosamente"),
+                                    @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+                                    @ApiResponse(responseCode = "404", description = "No encontrado"),
+                                    @ApiResponse(responseCode = "500", description = "Error interno")
+                            }
+                    )
+            ),
+
     })
     public RouterFunction<ServerResponse> requestLoanRoutes(RequestLoanHandler handler) {
-        return route(POST("/api/v1/solicitud/registrar"), handler::create)
-                .andRoute(POST("/api/v1/solicitud/pendientes"), handler::getPendingRequests);
+        return route(POST("/api/v1/solicitud"), handler::create)
+                .andRoute(POST("/api/v1/solicitud/pendientes"), handler::getPendingRequests)
+                .andRoute(PUT("/api/v1/solicitud/update"), handler::updateStatus)
+                ;
     }
 }

@@ -3,6 +3,7 @@ package co.com.requestloancrediyareactivo.api.handlers;
 
 import co.com.requestloancrediyareactivo.api.adapters.DTOValidatorAdapter;
 import co.com.requestloancrediyareactivo.api.dtos.RequestLoanCreateDTO;
+import co.com.requestloancrediyareactivo.api.dtos.RequestLoanUpdateDTO;
 import co.com.requestloancrediyareactivo.api.dtos.ResponseDTO;
 import co.com.requestloancrediyareactivo.api.mapper.RequestLoanMapper;
 import co.com.requestloancrediyareactivo.model.requestloan.models.PageDTO;
@@ -63,4 +64,24 @@ public class RequestLoanHandler {
                                 //.timestamp(LocalDateTime.now())
                                 .build()));
     }
+
+    public Mono<ServerResponse> updateStatus(ServerRequest request) {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> (UserResponseDomain) ctx.getAuthentication().getPrincipal())
+                .flatMap(user ->
+                        request.bodyToMono(RequestLoanUpdateDTO.class)
+                                .doOnNext(validatorAdapter::validateOrThrow)
+                                .flatMap(dto -> useCase.updateStatus(dto.id(), dto.statusId(), dto.comment()))
+                                .flatMap(data -> ServerResponse.ok()
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .bodyValue(ResponseDTO.<RequestLoanDomain>builder()
+                                                .success(true)
+                                                .message("Solicitud actualizada exitosamente")
+                                                .data(data)
+                                                .statusCode(200)
+                                                .build()))
+                );
+    }
+
+
 }

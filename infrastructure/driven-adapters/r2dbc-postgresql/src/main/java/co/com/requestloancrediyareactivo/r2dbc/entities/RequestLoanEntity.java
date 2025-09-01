@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Table("requestloan")
 public class RequestLoanEntity {
     @Id
-    private String id;
+    private UUID id;
 
     @Column("document")
     private String document;

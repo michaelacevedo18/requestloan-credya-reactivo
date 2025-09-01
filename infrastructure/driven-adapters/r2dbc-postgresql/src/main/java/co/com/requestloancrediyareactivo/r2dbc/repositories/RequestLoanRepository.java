@@ -7,8 +7,9 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.UUID;
 
 // TODO: This file is just an example, you should delete or modify it
-public interface RequestLoanRepository extends ReactiveCrudRepository<RequestLoanEntity, String>, ReactiveQueryByExampleExecutor<Object> {
+public interface RequestLoanRepository extends ReactiveCrudRepository<RequestLoanEntity, UUID>, ReactiveQueryByExampleExecutor<Object> {
     Flux<RequestLoanEntity> findAll();
 }
