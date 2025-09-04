@@ -7,6 +7,7 @@ import co.com.requestloancrediyareactivo.api.dtos.RequestLoanUpdateDTO;
 import co.com.requestloancrediyareactivo.api.dtos.ResponseDTO;
 import co.com.requestloancrediyareactivo.api.mapper.RequestLoanMapper;
 import co.com.requestloancrediyareactivo.model.requestloan.models.PageDTO;
+import co.com.requestloancrediyareactivo.model.requestloan.models.PendingRequestViewDTO;
 import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
 import co.com.requestloancrediyareactivo.model.requestloan.models.UserResponseDomain;
 import co.com.requestloancrediyareactivo.usecase.requestloan.RequestLoanUseCase;
@@ -53,17 +54,17 @@ public class RequestLoanHandler {
         int size = Integer.parseInt(request.queryParam("size").orElse("10"));
         List<Long> statuses = List.of(1L, 2L, 3L);
 
-        return useCase.findPendingForReview(statuses, page, size)
+        return useCase.findPendingForReview(statuses, page, size) // Mono<PageDTO<PendingRequestViewDTO>>
                 .flatMap(data -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(ResponseDTO.<PageDTO<RequestLoanDomain>>builder()
+                        .bodyValue(ResponseDTO.<PageDTO<PendingRequestViewDTO>>builder()
                                 .success(true)
                                 .message("Listado paginado de solicitudes pendientes")
                                 .data(data)
                                 .statusCode(200)
-                                //.timestamp(LocalDateTime.now())
                                 .build()));
     }
+
 
     public Mono<ServerResponse> updateStatus(ServerRequest request) {
         return ReactiveSecurityContextHolder.getContext()

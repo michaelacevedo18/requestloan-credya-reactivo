@@ -1,4 +1,5 @@
 package co.com.requestloancrediyareactivo.model.requestloan.models;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class RequestLoanDomain {
+public class PendingRequestViewDTO {
     private UUID id;
     private Double amount; //monto
     private Integer term; //plazo
@@ -25,5 +26,5 @@ public class RequestLoanDomain {
     private Long loanTypeId; //tipoprestamo
     private String loanTypeName;
     private String comment;
-    private BigDecimal totalMonthlyDebtApproved;
+    private BigDecimal totalApprovedDebt ;
 }

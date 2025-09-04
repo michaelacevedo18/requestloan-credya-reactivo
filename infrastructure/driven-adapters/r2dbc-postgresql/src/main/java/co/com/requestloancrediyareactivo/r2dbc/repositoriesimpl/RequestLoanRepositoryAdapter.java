@@ -15,7 +15,10 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Repository
@@ -77,6 +80,19 @@ public class RequestLoanRepositoryAdapter implements RequestLoanRepositoryGatewa
     public Mono<Void> sendStatusUpdateMessage(RequestLoanDomain solicitud) {
         return sqsEventPublisherPort.sendStatusUpdateMessage(solicitud);
     }
+
+    @Override
+    public Mono<BigDecimal> sumMonthlyDebtByIdNumber(String idNumber) {
+        return repo1.findByDocumentAndStatusId(idNumber, 2L)
+                .map(RequestLoanEntity::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO,
+                        (acc, amt) -> acc.add(BigDecimal.valueOf(amt)))
+                .map(total -> total.setScale(2, RoundingMode.HALF_UP))
+                .defaultIfEmpty(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+    }
+
+
 
 
 

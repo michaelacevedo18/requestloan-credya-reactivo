@@ -1,17 +1,17 @@
 package co.com.requestloancrediyareactivo.usecase.requestloan;
 
-import co.com.requestloancrediyareactivo.model.requestloan.gateways.TypeLoanRepositoryGateway;
+import java.util.List;
+import java.util.UUID;
 
-import co.com.requestloancrediyareactivo.model.requestloan.models.PageDTO;
-import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.RequestLoanRepositoryGateway;
+import co.com.requestloancrediyareactivo.model.requestloan.gateways.TypeLoanRepositoryGateway;
+import co.com.requestloancrediyareactivo.model.requestloan.models.PageDTO;
+import co.com.requestloancrediyareactivo.model.requestloan.models.PendingRequestViewDTO;
+import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
 import co.com.requestloancrediyareactivo.model.requestloan.models.UserResponseDomain;
 import co.com.requestloancrediyareactivo.usecase.requestloan.primaryPorts.IRequestLoanUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public class RequestLoanUseCase implements IRequestLoanUseCase {
@@ -37,30 +37,50 @@ public class RequestLoanUseCase implements IRequestLoanUseCase {
     }
 
     @Override
-    public Mono<PageDTO<RequestLoanDomain>> findPendingForReview(List<Long> statuses, int page, int size) {
+    public Mono<PageDTO<PendingRequestViewDTO>> findPendingForReview(List<Long> statuses, int page, int size) {
         int skip = (page - 1) * size;
 
-        Mono<List<RequestLoanDomain>> contentMono = gateway1.findAll()
-                .filter(entity -> statuses.contains(entity.getStatusId()))
-                .skip(skip)
-                .take(size)
-                .flatMap(domain ->
-                        gateway2.findTypeById(domain.getLoanTypeId())
-                                .map(type -> domain.toBuilder()
-                                        .loanTypeName(type.getName())
-                                        .build())
-                )
-                .collectList();
+        // 1) Contenido paginado + nombre del tipo de préstamo
+        Mono<List<PendingRequestViewDTO>> contentMono =
+                gateway1.findAll()                                  // Flux<RequestLoanDomain>
+                        .filter(entity -> statuses.contains(entity.getStatusId()))
+                        .skip(skip)
+                        .take(size)
+
+                        .flatMap(domain ->
+                                gateway2.findTypeById(domain.getLoanTypeId())
+                                        .map(type -> domain.toBuilder().loanTypeName(type.getName()).build())
+                        )
+
+                        .flatMap(domain ->
+                                        gateway1.sumMonthlyDebtByIdNumber(domain.getDocument())
+                                                .map(totalApprovedDebt ->
+                                                        PendingRequestViewDTO.builder()
+                                                                .id(domain.getId())
+                                                                .amount(domain.getAmount())
+                                                                .term(domain.getTerm())
+                                                                .document(domain.getDocument())
+                                                                .name(domain.getName())
+                                                                .email(domain.getEmail())
+                                                                .statusId(domain.getStatusId())
+                                                                .interestRate(domain.getInterestRate())
+                                                                .loanTypeId(domain.getLoanTypeId())
+                                                                .loanTypeName(domain.getLoanTypeName())
+                                                                .totalApprovedDebt(totalApprovedDebt) // <-
+                                                                .build()
+                                                )
+                                , /*concurrency*/ Math.max(2, size)) // opcional: controla paralelismo
+                        .collectList();
 
 
         Mono<Long> totalMono = gateway1.countByStatuses(statuses);
 
         return Mono.zip(contentMono, totalMono)
                 .map(tuple -> {
-                    List<RequestLoanDomain> content = tuple.getT1();
+                    List<PendingRequestViewDTO> content = tuple.getT1();
                     Long total = tuple.getT2();
                     int totalPages = (int) Math.ceil((double) total / size);
-                    return PageDTO.<RequestLoanDomain>builder()
+                    return PageDTO.<PendingRequestViewDTO>builder()
                             .content(content)
                             .page(page)
                             .size(size)
@@ -69,6 +89,7 @@ public class RequestLoanUseCase implements IRequestLoanUseCase {
                             .build();
                 });
     }
+
 
     @Override
     public Mono<RequestLoanDomain> updateStatus(UUID id, int status, String comentario) {

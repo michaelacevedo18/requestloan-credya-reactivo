@@ -1,11 +1,12 @@
 package co.com.requestloancrediyareactivo.model.requestloan.gateways;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
 import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface RequestLoanRepositoryGateway {
     Mono<RequestLoanDomain> save(RequestLoanDomain requestLoanD);
@@ -14,4 +15,5 @@ public interface RequestLoanRepositoryGateway {
     Mono<Long> countByStatuses(List<Long> statuses);
     Mono<RequestLoanDomain> findById(UUID id);
     Mono<Void> sendStatusUpdateMessage(RequestLoanDomain solicitud);
+    Mono<BigDecimal> sumMonthlyDebtByIdNumber(String idNumber);
 }

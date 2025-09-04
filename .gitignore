@@ -14,6 +14,13 @@ local.properties
 .loadpath
 .recommenders
 
+# Config sensibles
+application.yml
+application.yaml
+src/main/resources/application.yml
+src/main/resources/application.yaml
+applications/app-service/src/main/resources/application.yaml
+
 # External tool builders
 .externalToolBuilders/
 
