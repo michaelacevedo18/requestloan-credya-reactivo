@@ -1,20 +1,18 @@
 package co.com.requestloancrediyareactivo.model.requestloan.models;
 
+import lombok.*;
+
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.UUID;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class PendingRequestViewDTO {
+public class SendObjectToQueue {
     private UUID id;
     private Double amount; //monto
     private Integer term; //plazo
@@ -22,10 +20,12 @@ public class PendingRequestViewDTO {
     private String name; //nombre
     private String email; //email
     private Long statusId; //estado
-    private Double loanTypeInterestrate; //tasa de interes
+    private Double loanTypeInterestrate;
+    private Boolean auto_validation;
     private Long loanTypeId; //tipoprestamo
     private String loanTypeName;
     private String comment;
-    private Boolean auto_validation;
-    private Double totalApprovedDebt ;
+
+    private Double baseSalary;
+    private Double availableDebtCapacity;
 }

@@ -26,9 +26,9 @@ public class TypeLoanEntity {
     @Column("min_amount")
     private Double minAmount;
 
-    @Column("interest_rate")
-    private Double interestRate;
+    @Column("interestrate")
+    private Double interestrate;
 
     @Column("auto_validation")
-    private boolean autoValidation;
+    private Boolean auto_validation;
 }

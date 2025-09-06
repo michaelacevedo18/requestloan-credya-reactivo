@@ -46,11 +46,10 @@ public class RequestLoanRouter {
                                                             name = "Ejemplo de solicitud",
                                                             value = """
                         {
-                          "document": "1049049049",
-                          "email": "cliente@correo.com",
-                          "name": "Julian Perez",
-                          "amount": 1500000,
-                          "interesRate": 1.3,
+                          "document": "10496328788",
+                          "email": "michaelacevedoruiz48@gmail.com",
+                          "name": "Michael Acevedo",
+                          "amount": 15000000,                          
                           "term": 6,
                           "loanTypeId": 1
                         }

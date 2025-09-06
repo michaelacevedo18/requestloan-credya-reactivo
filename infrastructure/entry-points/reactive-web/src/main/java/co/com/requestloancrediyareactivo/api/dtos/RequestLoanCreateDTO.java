@@ -31,9 +31,9 @@ public record RequestLoanCreateDTO(
         @Schema(description = "Monto solicitado", example = "1500000", required = true)
         Double amount,
 
-        @NotNull(message = "La tasa de interes ")
-        @Schema(description = "Tasa de interes", example = "1.5", required = true)
-        Double interesRate,
+        //@NotNull(message = "La tasa de interes ")
+        //@Schema(description = "Tasa de interes", example = "1.5", required = true)
+        //Double interesRate,
 
         @NotNull(message = "El termino del prestamo obligatorio")
         @Schema(description = "Plazo del prestamo en meses", example = "6", required = true)

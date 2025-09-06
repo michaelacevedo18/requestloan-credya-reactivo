@@ -15,6 +15,6 @@ public class TypeLoanDomain {
     private String name;
     private Double minAmount;
     private Double maxAmount;
-    private Double interestRate;
-    private Boolean autoValidation;
+    private Double loanTypeInterestrate;
+    private Boolean auto_validation;
 }

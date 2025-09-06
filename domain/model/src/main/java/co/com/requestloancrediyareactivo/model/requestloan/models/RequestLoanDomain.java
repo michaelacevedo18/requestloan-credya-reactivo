@@ -21,9 +21,11 @@ public class RequestLoanDomain {
     private String name; //nombre
     private String email; //email
     private Long statusId; //estado
-    private Double interestRate; //tasa de interes
+    private Double loanTypeInterestrate;
+    private Boolean auto_validation;
     private Long loanTypeId; //tipoprestamo
     private String loanTypeName;
     private String comment;
-    private BigDecimal totalMonthlyDebtApproved;
+    private Double baseSalary;
+    private Double totalMonthlyDebtApproved;
 }

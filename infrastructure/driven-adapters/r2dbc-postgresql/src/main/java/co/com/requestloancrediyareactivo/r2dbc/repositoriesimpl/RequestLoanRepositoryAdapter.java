@@ -4,10 +4,12 @@ package co.com.requestloancrediyareactivo.r2dbc.repositoriesimpl;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.RequestLoanRepositoryGateway;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.ports.SQSEventPublisherPort;
 import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
+import co.com.requestloancrediyareactivo.model.requestloan.models.SendObjectToQueue;
 import co.com.requestloancrediyareactivo.r2dbc.entities.RequestLoanEntity;
 import co.com.requestloancrediyareactivo.r2dbc.helper.TransactionalUtils;
 
 import co.com.requestloancrediyareactivo.r2dbc.repositories.RequestLoanRepository;
+import co.com.requestloancrediyareactivo.r2dbc.repositories.TypeLoanRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.reactivecommons.utils.ObjectMapper;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RequestLoanRepositoryAdapter implements RequestLoanRepositoryGateway {
     private final RequestLoanRepository repo1;
+    private final TypeLoanRepository repo2;
     private final ObjectMapper mapper;
     private final TransactionalUtils tx;
     private final SQSEventPublisherPort sqsEventPublisherPort;
@@ -77,23 +81,44 @@ public class RequestLoanRepositoryAdapter implements RequestLoanRepositoryGatewa
 
 
     @Override
-    public Mono<Void> sendStatusUpdateMessage(RequestLoanDomain solicitud) {
+    public Mono<Void> sendToqueaueStatus(RequestLoanDomain solicitud) {
         return sqsEventPublisherPort.sendStatusUpdateMessage(solicitud);
     }
 
     @Override
-    public Mono<BigDecimal> sumMonthlyDebtByIdNumber(String idNumber) {
+    public Mono<Double> sumMonthlyDebtByIdNumber(String idNumber) {
         return repo1.findByDocumentAndStatusId(idNumber, 2L)
-                .map(RequestLoanEntity::getAmount)
+                .map(RequestLoanEntity::getCalculatedMonthlyFee)   // BigDecimal?
                 .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO,
-                        (acc, amt) -> acc.add(BigDecimal.valueOf(amt)))
-                .map(total -> total.setScale(2, RoundingMode.HALF_UP))
-                .defaultIfEmpty(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+                .map(Double::doubleValue)
+                .reduce(0.0, Double::sum)
+                .defaultIfEmpty(0.0);
     }
 
 
 
+
+    @Override
+    public Mono<SendObjectToQueue> findByIdRelatedProps(UUID id) {
+        return repo1.findById(id)                               // Mono<RequestLoanEntity>
+                .switchIfEmpty(Mono.error(new RuntimeException("Solicitud no encontrada")))
+                .flatMap(e -> Mono.zip(
+                        repo2.findById(e.getLoanTypeId())        // Mono<TypeLoanEntity>
+                                .switchIfEmpty(Mono.error(new RuntimeException("Tipo no encontrado"))),
+                        sumMonthlyDebtByIdNumber(e.getDocument())   // Mono<BigDecimal>
+                                .defaultIfEmpty(0D)
+                ).map(t -> {
+                    var type = t.getT1();
+                    var debt = t.getT2();
+
+                    var out = mapper.map(e, SendObjectToQueue.class);
+                    out.setLoanTypeInterestrate(type.getInterestrate());
+                    out.setAuto_validation(type.getAuto_validation());
+                    out.setLoanTypeName(type.getName());
+                    out.setAvailableDebtCapacity(debt);
+                    return out;
+                }));
+    }
 
 
 }

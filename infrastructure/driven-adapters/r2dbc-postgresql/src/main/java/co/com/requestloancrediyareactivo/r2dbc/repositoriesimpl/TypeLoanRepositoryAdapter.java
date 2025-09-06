@@ -1,11 +1,14 @@
 package co.com.requestloancrediyareactivo.r2dbc.repositoriesimpl;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.TypeLoanRepositoryGateway;
+import co.com.requestloancrediyareactivo.model.requestloan.models.SendObjectToQueue;
 import co.com.requestloancrediyareactivo.model.requestloan.models.TypeLoanDomain;
 import co.com.requestloancrediyareactivo.r2dbc.helper.TransactionalUtils;
 import co.com.requestloancrediyareactivo.r2dbc.repositories.TypeLoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
+
+import java.math.BigInteger;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,10 +30,13 @@ public class TypeLoanRepositoryAdapter implements TypeLoanRepositoryGateway {
                         .map(entity -> TypeLoanDomain.builder()
                                 .id(entity.getId())
                                 .name(entity.getName())
+                                .auto_validation(entity.getAuto_validation())
+                                .loanTypeInterestrate(entity.getInterestrate())
                                 .build()
                         )
         );
     }
+
 
 
 }

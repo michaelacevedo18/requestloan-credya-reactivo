@@ -35,12 +35,18 @@ public class RequestLoanEntity {
     @Column("status_id")
     private Long statusId;
 
-    @Column("interest_rate")
-    private Double interestRate;
+    //@Column("interest_rate")
+    //private Double interestRate;
 
     @Column("loan_type_id")
     private Long loanTypeId;
 
     @Column("nombre")
     private String name;
+
+    @Column("version")
+    private Integer version;
+
+    @Column("calculated_monthly_fee")
+    private Double calculatedMonthlyFee;
 }
