@@ -26,7 +26,7 @@ public class AwsSQSConfig {
     @Value("${aws.queue}")
     private String queueUrl;
 
-    @Bean
+    @Bean(name = "publisherSqsClient")
     public SqsAsyncClient sqsAsyncClient() {
         log.info("✅ Inicializando cliente SQS con región: {}", region);
 

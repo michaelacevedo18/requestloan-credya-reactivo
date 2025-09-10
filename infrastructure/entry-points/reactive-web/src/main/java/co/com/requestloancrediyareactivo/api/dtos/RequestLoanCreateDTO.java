@@ -44,5 +44,6 @@ public record RequestLoanCreateDTO(
 
         @NotNull(message = "El tipo de prestamo es obligatorio")
         @Schema(description = "ID del tipo de prestamo, debe ser valido", example = "1", required = true)
-        Long loanTypeId
+        Long loanTypeId,
+        Long version
 ) {}

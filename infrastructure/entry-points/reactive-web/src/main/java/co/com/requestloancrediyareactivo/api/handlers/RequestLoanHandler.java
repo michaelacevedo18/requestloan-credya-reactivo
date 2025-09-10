@@ -36,7 +36,7 @@ public class RequestLoanHandler {
                         request.bodyToMono(RequestLoanCreateDTO.class)
                                 .doOnNext(validatorAdapter::validateOrThrow)
                                 .map(RequestLoanMapper::toDomain)
-                                .flatMap(domain -> useCase.apply(domain, user))
+                                .flatMap(domain -> useCase.crearr(domain, user))
                                 .flatMap(data -> ServerResponse.ok()
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .bodyValue(ResponseDTO.<RequestLoanDomain>builder()
@@ -52,7 +52,8 @@ public class RequestLoanHandler {
     public Mono<ServerResponse> getPendingRequests(ServerRequest request) {
         int page = Integer.parseInt(request.queryParam("page").orElse("1"));
         int size = Integer.parseInt(request.queryParam("size").orElse("10"));
-        List<Long> statuses = List.of(1L, 2L, 3L);
+        //List<Long> statuses = List.of(1L, 2L, 3L);
+        List<Long> statuses = List.of(4L);
 
         return useCase.findPendingForReview(statuses, page, size) // Mono<PageDTO<PendingRequestViewDTO>>
                 .flatMap(data -> ServerResponse.ok()
@@ -72,7 +73,7 @@ public class RequestLoanHandler {
                 .flatMap(user ->
                         request.bodyToMono(RequestLoanUpdateDTO.class)
                                 .doOnNext(validatorAdapter::validateOrThrow)
-                                .flatMap(dto -> useCase.updateStatus(dto.id(), dto.statusId(), dto.comment()))
+                                .flatMap(dto -> useCase.updateStatus(dto.id(), dto.statusId(), dto.calculatedMonthlyFee()))
                                 .flatMap(data -> ServerResponse.ok()
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .bodyValue(ResponseDTO.<RequestLoanDomain>builder()

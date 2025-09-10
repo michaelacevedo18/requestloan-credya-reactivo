@@ -27,5 +27,5 @@ public class PendingRequestViewDTO {
     private String loanTypeName;
     private String comment;
     private Boolean auto_validation;
-    private Double totalApprovedDebt ;
+    private BigDecimal totalApprovedDebt ;
 }

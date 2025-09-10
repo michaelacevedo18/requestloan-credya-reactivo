@@ -1,3 +1,52 @@
+//dependencies {
+//  implementation project(':model')
+    // JUnit 5
+//  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+//  testRuntimeOnly  'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+
+//  // Mockito + extensión JUnit Jupiter
+//  testImplementation 'org.mockito:mockito-core:5.13.0'
+//   testImplementation 'org.mockito:mockito-junit-jupiter:5.13.0'
+
+//  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+//  testRuntimeOnly  'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+
+//  testImplementation 'org.mockito:mockito-core:5.13.0'
+//   testImplementation 'org.mockito:mockito-junit-jupiter:5.13.0'
+//  testImplementation 'io.projectreactor:reactor-test:3.6.9'
+//  testImplementation 'org.assertj:assertj-core:3.26.3'
+
+//  testImplementation 'io.projectreactor:reactor-test:3.6.9'
+
+//  testImplementation 'org.assertj:assertj-core:3.26.3'
+//}
 dependencies {
     implementation project(':model')
+
+    // Alinear toda la plataforma JUnit a 5.12.2 (trae engine/params/api)
+    testImplementation platform("org.junit:junit-bom:5.12.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+
+    // Mockito
+    testImplementation "org.mockito:mockito-core:5.13.0"
+    testImplementation "org.mockito:mockito-junit-jupiter:5.13.0"
+
+    // Reactor Test + AssertJ
+    testImplementation "io.projectreactor:reactor-test:3.6.9"
+    testImplementation "org.assertj:assertj-core:3.26.3"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+configurations.all {
+    resolutionStrategy {
+        force "org.junit.jupiter:junit-jupiter-api:5.12.2",
+                "org.junit.jupiter:junit-jupiter-engine:5.12.2",
+                "org.junit.jupiter:junit-jupiter-params:5.12.2",
+                "org.junit.platform:junit-platform-engine:1.12.2",
+                "org.junit.platform:junit-platform-launcher:1.12.2",
+                "org.junit.platform:junit-platform-commons:1.12.2"
+    }
 }

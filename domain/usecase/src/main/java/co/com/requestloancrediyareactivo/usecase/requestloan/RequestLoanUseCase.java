@@ -2,88 +2,86 @@ package co.com.requestloancrediyareactivo.usecase.requestloan;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
-import co.com.requestloancrediyareactivo.model.requestloan.gateways.CapacidadGateway;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.RequestLoanRepositoryGateway;
 import co.com.requestloancrediyareactivo.model.requestloan.gateways.TypeLoanRepositoryGateway;
-import co.com.requestloancrediyareactivo.model.requestloan.models.*;
+import co.com.requestloancrediyareactivo.model.requestloan.models.PageDTO;
+import co.com.requestloancrediyareactivo.model.requestloan.models.PendingRequestViewDTO;
+import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDomain;
+import co.com.requestloancrediyareactivo.model.requestloan.models.SendObjectToQueue;
+import co.com.requestloancrediyareactivo.model.requestloan.models.UserResponseDomain;
 import co.com.requestloancrediyareactivo.usecase.capacity.primaryPorts.ICapacidadUseCase;
 import co.com.requestloancrediyareactivo.usecase.requestloan.primaryPorts.IRequestLoanUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+
 
 @RequiredArgsConstructor
 public class RequestLoanUseCase implements IRequestLoanUseCase {
     private final RequestLoanRepositoryGateway gateway1;
     private final TypeLoanRepositoryGateway gateway2;
     private final ICapacidadUseCase capacidadUseCase;
-
-   /** @Override
-    public Mono<RequestLoanDomain> apply(RequestLoanDomain domain, UserResponseDomain user) {
-        if (!domain.getDocument().equals(user.getIdNumber())) {
-            return Mono.error(new RuntimeException("No autorizado: solo puedes crear solicitudes con tu propio documento"));
-        }
-        return gateway2.existsById(domain.getLoanTypeId())
-                .flatMap(exists -> {
-                    if (!exists) {
-                        return Mono.error(new IllegalArgumentException("Tipo de prestamo no valido"));
-                    }
-                    RequestLoanDomain enriched = domain.toBuilder()
-                            .statusId(1L)
-                            .build();
-                    return gateway1.save(enriched);
-                });
-    }
-**/
+    private static final String LOGP = "[crearr]";
+   
    @Override
-   public Mono<RequestLoanDomain> apply(RequestLoanDomain domain, UserResponseDomain user) {
-       if (!domain.getDocument().equals(user.getIdNumber())) {
+   public Mono<RequestLoanDomain> crearr(RequestLoanDomain domain, UserResponseDomain user) {
+       final String trace = java.util.UUID.randomUUID().toString().substring(0, 8);
+
+       if (!java.util.Objects.equals(domain.getDocument(), user.getIdNumber())) {
            return Mono.error(new RuntimeException("No autorizado: solo puedes crear solicitudes con tu propio documento"));
        }
 
        return gateway2.existsById(domain.getLoanTypeId())
                .flatMap(exists -> {
-                   if (!exists) return Mono.error(new IllegalArgumentException("Tipo de prestamo no valido ."));
+                   if (!exists) {
+                       return Mono.error(new IllegalArgumentException("Tipo de prestamo no valido."));
+                   }
 
-                   var toSave = domain.toBuilder()
-                           .statusId(1L) // Pendiente de revisión
-                           .build();
-
+                   var toSave = domain.toBuilder().statusId(1L).build();
                    return gateway1.save(toSave)
-                           .flatMap(saved ->
-                                   gateway2.findTypeById(saved.getLoanTypeId())
-                                           .flatMap(type -> {
-                                               boolean auto = Boolean.TRUE.equals(type.getAuto_validation());
+                           .flatMap(saved -> {
 
-                                               // documento -> BigInteger seguro
-                                               BigInteger docNum;
-                                               try { docNum = new BigInteger(saved.getDocument()); }
-                                               catch (Exception e) { docNum = null; }
+                               return gateway2.findTypeById(saved.getLoanTypeId())
+                                       .flatMap(type -> {
+                                           boolean auto = Boolean.TRUE.equals(type.getAuto_validation());
 
-                                               // payload enriquecido (props para la lambda)
-                                               return getPropsToQueue(saved.getId(), docNum)
-                                                       .doOnNext(p -> {
-                                                           if (auto) {
-                                                               System.out.println("Se debe ejecutar la lambda");
+                                           java.math.BigInteger docNum = null;
+                                           try { docNum = new java.math.BigInteger(saved.getDocument()); }
+                                           catch (Exception e) {
+                                               System.out.println(LOGP+"("+trace+") WARN cannot parse document '"+saved.getDocument()+"': "+e.getMessage());
+                                           }
 
-                                                           }
-                                                       })
-                                                       // <-- Este es el truco: devolver el DOMAIN enriquecido para la respuesta
-                                                       .map(p -> saved.toBuilder()
-                                                               .loanTypeInterestrate(p.getLoanTypeInterestrate())
-                                                               .auto_validation(p.getAuto_validation())
-                                                               .loanTypeName(p.getLoanTypeName())
-                                                               .baseSalary(p.getBaseSalary())
-                                                               .totalMonthlyDebtApproved(p.getAvailableDebtCapacity())
-                                                               .build()
-                                                       );
-                                           })
-                                           // si no hay tipo, devuelve lo guardado tal cual
-                                           .switchIfEmpty(Mono.just(saved))
-                           );
-               });
+                                           return getPropsToQueue(saved.getId(), docNum)
+                                                   .flatMap(props -> {
+                                                       if (auto) {
+                                                           return gateway1.sendToQueaueCapacidad(props)
+                                                                   .doOnError(err -> System.out.println(LOGP+"("+trace+") queue ERROR "+err))
+                                                                   .onErrorResume(err -> Mono.empty())
+                                                                   .thenReturn(props);
+                                                       } else {
+                                                           return Mono.just(props);
+                                                       }
+                                                   })
+                                                   .map(props -> {
+                                                       return saved.toBuilder()
+                                                               .loanTypeInterestrate(props.getLoanTypeInterestrate())
+                                                               .auto_validation(props.getAuto_validation())
+                                                               .loanTypeName(props.getLoanTypeName())
+                                                               .baseSalary(props.getBaseSalary())
+                                                               .totalMonthlyDebtApproved(props.getAvailableDebtCapacity())
+                                                               .build();
+                                                   });
+                                       })
+                                       .switchIfEmpty(Mono.fromSupplier(() -> {
+                                           return saved;
+                                       }));
+                           });
+               })
+               .doOnError(err -> System.out.println(LOGP+"("+trace+") ERROR "+err.getClass().getSimpleName()+": "+err.getMessage()))
+               .doFinally(sig -> System.out.println(LOGP+"("+trace+") end signal="+sig));
    }
 
 
@@ -138,6 +136,7 @@ public class RequestLoanUseCase implements IRequestLoanUseCase {
                                                             .statusId(domain.getStatusId())
                                                             .loanTypeId(domain.getLoanTypeId())
                                                             .loanTypeName(domain.getLoanTypeName())
+
                                                             .loanTypeInterestrate(domain.getLoanTypeInterestrate())
                                                             .auto_validation(domain.getAuto_validation())
                                                             .totalApprovedDebt(totalApprovedDebt)
@@ -166,63 +165,100 @@ public class RequestLoanUseCase implements IRequestLoanUseCase {
     }
 
 
+    //Entrante desde SQS QueauRebootMicroSolicitud
+  @Override
+public Mono<RequestLoanDomain> updateStatusAtomQuot(UUID id, int status, int atomVersion, double quotLoan) {
+
+    final double effectiveQuot = (status == 4 || status==3) ? 0d : quotLoan; // <-- efectivamente final
+    final BigDecimal fee = BigDecimal.valueOf(effectiveQuot).setScale(2, RoundingMode.HALF_UP);
+
+    return gateway1.findById(id)
+        .switchIfEmpty(Mono.error(new RuntimeException("Solicitud no encontrada")))
+        .flatMap(request -> {
+            RequestLoanDomain actualizado = request.toBuilder()
+                .statusId((long) status)
+                .version((long) atomVersion)
+                .calculatedMonthlyFee(fee) // queda 0 si status == 4
+                .build();
+
+            return gateway1.update(actualizado)
+                .flatMap(saved -> getPropsToQueue(saved.getId(), safeBigInt(saved.getDocument()))
+                    .flatMap(dto -> gateway1.sendToqueaueStatus(dto))
+                    .thenReturn(saved));
+        });
+}
+
+
+//ASESOR EVALUA Y DECIDE
     @Override
-    public Mono<RequestLoanDomain> updateStatus(UUID id, int status, String comentario) {
+    public Mono<RequestLoanDomain> updateStatus(UUID id, int status, BigDecimal calculatedMonthlyFee) {
+
         return gateway1.findById(id)
                 .switchIfEmpty(Mono.error(new RuntimeException("Solicitud no encontrada")))
                 .flatMap(request -> {
-                    if (request.getStatusId() != 1L) {
-                        return Mono.error(new RuntimeException("Esta solicitud ya fue gestionada por el asesor"));
-                    }
-                    if (status == 1) {
-                        return Mono.error(new RuntimeException("Por favor proporcione un estado diferente a Pendiente de revisión"));
-                    }
 
-                    RequestLoanDomain actualizado = request.toBuilder()
+                    if (request.getStatusId() != 4L)
+                        return Mono.error(new RuntimeException("Esta solicitud ya fue gestionada por el asesor"));
+                    if (status == 1 || status == 4 || status == 5)
+                        return Mono.error(new RuntimeException("Por favor proporcione un estado permitido 2 (Aprobado) o 3 (Rechazado)"));
+                    if (status == 2 && (calculatedMonthlyFee == null || calculatedMonthlyFee.compareTo(BigDecimal.ZERO) <= 0))
+                        return Mono.error(new RuntimeException("Para aprobar se requiere la cuota mensual (> 0)"));
+
+                    final BigDecimal fee = calculatedMonthlyFee.setScale(2, java.math.RoundingMode.HALF_UP);
+
+                    final RequestLoanDomain actualizado = request.toBuilder()
                             .statusId((long) status)
-                            .comment(comentario)
+                            .calculatedMonthlyFee(fee)
+                            .version(0L)
                             .build();
 
-                    System.out.println("Solicitud actualizada: " + actualizado);
-
                     return gateway1.update(actualizado)
-                            .flatMap(saved ->
-                                    gateway1.sendToqueaueStatus(saved)
-                                            .thenReturn(saved)
-                                            .onErrorResume(error -> {
-                                                System.out.println("Error al enviar a SQS, se revertirá la solicitud");
-                                                return gateway1.update(request) // rollback
-                                                        .then(Mono.error(new RuntimeException("No se envio el mensaje a SQS el estado sigue siendo Pendiente", error)));
-                                            })
-                            );
+                            .flatMap(saved -> {
+                                BigInteger docNum = safeBigInt(saved.getDocument());
+
+                                return getPropsToQueue(saved.getId(), docNum)      // Mono<SendObjectToQueue>
+                                        .flatMap(dto -> gateway1.sendToqueaueStatus(dto)   // ✔ ahora coincide la firma
+                                                .thenReturn(saved))                            // devolvemos lo guardado
+                                        .onErrorResume(err ->
+                                                gateway1.update(request)                       // rollback si falla enriq/envío
+                                                        .then(Mono.error(new RuntimeException(
+                                                                "No se envió a SQS; se revirtió el estado.", err))));
+                            });
+
                 });
     }
+
+
+
+
+    private static java.math.BigInteger safeBigInt(String s) {
+        try { return s == null ? null : new java.math.BigInteger(s); }
+        catch (Exception e) { return null; }
+    }
+
+
+
 
     @Override
     public Mono<SendObjectToQueue> getPropsToQueue(UUID id, BigInteger documentNumber) {
         return gateway1.findByIdRelatedProps(id)
                 .switchIfEmpty(Mono.error(new RuntimeException("Solicitud no encontrada")))
-                .flatMap(req ->
-
-                        Mono.zip(
-                                Mono.just(req),
-                                gateway2.findTypeById(req.getLoanTypeId())
-                                        .switchIfEmpty(Mono.error(new RuntimeException("Tipo de préstamo no encontrado"))),
-                                gateway1.sumMonthlyDebtByIdNumber(req.getDocument())
-                                        .defaultIfEmpty(Double.valueOf(0.0D)),
-
-                                capacidadUseCase.getBaseSalary(req.getDocument())
-                                        .switchIfEmpty(Mono.just(0D))
-                                        .onErrorReturn(0D) // fallback
-                        )
-                )
+                .flatMap(req -> Mono.zip(
+                        Mono.just(req),
+                        gateway2.findTypeById(req.getLoanTypeId())
+                                .switchIfEmpty(Mono.error(new RuntimeException("Tipo de préstamo no encontrado"))),
+                        gateway1.sumMonthlyDebtByIdNumber(req.getDocument())
+                                .defaultIfEmpty(BigDecimal.ZERO),       // <- Double
+                        capacidadUseCase.getBaseSalary(req.getDocument())
+                                .switchIfEmpty(Mono.just(0.0))
+                                .onErrorReturn(0.0)        // <- Double
+                ))
                 .map(t -> {
                     var r      = t.getT1(); // RequestLoanDomain
                     var ty     = t.getT2(); // TypeLoanDomain
-                    var debt   = t.getT3(); // BigDecimal
-                    var salary = t.getT4(); // BigDecimal
-                    System.out.println("Salary--: "+ salary );
-                    System.out.println("Debt--: "+ debt );
+                    BigDecimal debt   = t.getT3(); // Double (ajustado)
+                    Double salary = t.getT4(); // Double (ajustado)
+                    BigDecimal fee = debt;
                     return SendObjectToQueue.builder()
                             .id(r.getId())
                             .amount(r.getAmount())
@@ -236,8 +272,8 @@ public class RequestLoanUseCase implements IRequestLoanUseCase {
                             .loanTypeId(r.getLoanTypeId())
                             .loanTypeName(ty.getName())
                             .comment(r.getComment())
-                            .availableDebtCapacity(debt)
-                            .baseSalary(salary)                 // <-- YA NO ES 55B
+                            .availableDebtCapacity(fee)   // <- si tu builder espera BigDecimal, convierte aquí
+                            .baseSalary(salary)            // <- idem
                             .build();
                 });
     }

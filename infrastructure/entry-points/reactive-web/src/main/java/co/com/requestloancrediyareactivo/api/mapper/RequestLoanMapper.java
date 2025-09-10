@@ -5,6 +5,7 @@ import co.com.requestloancrediyareactivo.model.requestloan.models.RequestLoanDom
 
 public class RequestLoanMapper {
     public static RequestLoanDomain toDomain(RequestLoanCreateDTO dto) {
+        System.out.println("-------Evaluando mapper 1: "+ dto.version());
         return RequestLoanDomain.builder()
                 .id(dto.id()) // puede ser null, se generará UUID en el adaptador
                 .amount(dto.amount())
@@ -14,6 +15,7 @@ public class RequestLoanMapper {
                 //.statusId(dto.statusId())
                 //.interestRate(dto.interesRate())
                 //.interestRate(3.3D)
+                .version(dto.version())
                 .email(dto.email())
                 .name(dto.name())
                 .build();
@@ -21,6 +23,7 @@ public class RequestLoanMapper {
 
     // De Dominio a DTO
     public static RequestLoanCreateDTO toDTO(RequestLoanDomain requestLoan) {
+        System.out.println("-------Evaluando mapper 2");
         return RequestLoanCreateDTO.builder()
                 .id(requestLoan.getId())
                 .document(requestLoan.getDocument())
@@ -28,7 +31,7 @@ public class RequestLoanMapper {
                 .term(requestLoan.getTerm())
                 .name(requestLoan.getName())
                 .loanTypeId(requestLoan.getLoanTypeId())
-
+                .version(requestLoan.getVersion())
                 //.interesRate(requestLoan.getInterestRate())
                 //.statusId(requestLoan.getStatusId())
                 .email(requestLoan.getEmail())

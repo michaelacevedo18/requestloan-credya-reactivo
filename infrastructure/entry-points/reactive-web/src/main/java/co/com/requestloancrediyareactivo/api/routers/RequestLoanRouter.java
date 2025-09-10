@@ -110,12 +110,12 @@ public class RequestLoanRouter {
                                             schema = @Schema(implementation = RequestLoanUpdateDTO.class),
                                             examples = {
                                                     @ExampleObject(
-                                                            name = "Ejemplo de actualización",
+                                                            name = "Ejemplo de actualizacion",
                                                             value = """
                             {
                               "id": "96942fc4-65b9-44da-b29e-a836fb6f4d32",
                               "statusId": 2,
-                              "comment": "Aprobado por buen historial"
+                              "calculatedMonthlyFee": 18.3                           
                             }
                         """
                                                     )

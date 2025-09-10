@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Builder
@@ -17,9 +18,7 @@ public record RequestLoanUpdateDTO(
         @Schema(description = "El id del estado de la solicitud, debe ser valido", example = "2, 3, 4", required = true)
         int statusId,
 
-        @NotBlank(message = "El correo es obligatorio")
-        @Schema(description = "Comentario", example = "Aceptación y/o recomendaciones", required = true)
-        String comment
+        BigDecimal calculatedMonthlyFee
 
 
 ) {}

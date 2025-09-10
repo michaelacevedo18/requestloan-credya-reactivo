@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -45,8 +46,9 @@ public class RequestLoanEntity {
     private String name;
 
     @Column("version")
-    private Integer version;
+    private Long version;
 
     @Column("calculated_monthly_fee")
-    private Double calculatedMonthlyFee;
+    private BigDecimal calculatedMonthlyFee;
+
 }

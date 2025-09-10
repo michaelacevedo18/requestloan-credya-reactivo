@@ -3,7 +3,6 @@ package co.com.requestloancrediyareactivo.model.requestloan.models;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.UUID;
 
 
@@ -25,7 +24,8 @@ public class SendObjectToQueue {
     private Long loanTypeId; //tipoprestamo
     private String loanTypeName;
     private String comment;
-
+    private Long version;
     private Double baseSalary;
-    private Double availableDebtCapacity;
+    private BigDecimal availableDebtCapacity;
+    private Double calculatedMonthlyFee;
 }

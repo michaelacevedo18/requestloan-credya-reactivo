@@ -27,5 +27,7 @@ public class RequestLoanDomain {
     private String loanTypeName;
     private String comment;
     private Double baseSalary;
-    private Double totalMonthlyDebtApproved;
+    private Long version;
+    private BigDecimal totalMonthlyDebtApproved;
+    private BigDecimal calculatedMonthlyFee;
 }
